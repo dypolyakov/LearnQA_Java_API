@@ -37,6 +37,7 @@ public class Ex8 {
                 .jsonPath();
 
         status = afterTask.get("status");
-        System.out.println("Status: " + status);
+        String result = afterTask.get("result");
+        System.out.println("Status: " + status + "\nResult: " + result);
     }
 }
