@@ -4,6 +4,7 @@ import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
+import lib.Assertions;
 import lib.BaseTestCase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,18 +44,15 @@ public class UserAuthTest extends BaseTestCase {
     @Test
     public void testAuthUser() {
 
-        JsonPath responseCheckAuth = RestAssured
+        Response responseCheckAuth = RestAssured
                 .given()
                 .headers("x-csrf-token", header)
                 .cookie("auth_sid", cookie)
                 .when()
                 .get("https://playground.learnqa.ru/api/user/auth")
-                .jsonPath();
+                .andReturn();
 
-        int userIdOnCheck = responseCheckAuth.getInt("user_id");
-
-        assertTrue(userIdOnCheck > 0, "Unexpected user id " + userIdOnCheck);
-        assertEquals(userIdOnAuth, userIdOnCheck, "User id from auth request is not equal to user id from check request");
+        Assertions.assertJsonByName(responseCheckAuth, "user_id", userIdOnAuth);
     }
 
     @ParameterizedTest
@@ -72,9 +70,8 @@ public class UserAuthTest extends BaseTestCase {
             throw new IllegalArgumentException("Condition value is known " + condition);
         }
 
-        JsonPath responseCheckAuth = spec.get().jsonPath();
+        Response responseCheckAuth = spec.get().andReturn();
 
-        int userIdOnCheck = responseCheckAuth.getInt("user_id");
-        assertEquals(0, userIdOnCheck, "User id should be 0 for unauth request");
+        Assertions.assertJsonByName(responseCheckAuth, "user_id", 0);
     }
 }
