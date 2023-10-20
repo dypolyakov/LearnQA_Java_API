@@ -1,7 +1,10 @@
+package tests;
+
 import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
+import lib.BaseTestCase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -13,7 +16,7 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class UserAuthTest {
+public class UserAuthTest extends BaseTestCase {
 
     String cookie;
     String header;
@@ -32,9 +35,9 @@ public class UserAuthTest {
                 .post("https://playground.learnqa.ru/api/user/login")
                 .andReturn();
 
-        cookie = responseGetAuth.getCookie("auth_sid");
-        header = responseGetAuth.getHeader("x-csrf-token");
-        userIdOnAuth = responseGetAuth.jsonPath().getInt("user_id");
+        cookie = getCookie(responseGetAuth, "auth_sid");
+        header = getHeader(responseGetAuth, "x-csrf-token");
+        userIdOnAuth = getIntFromJson(responseGetAuth, "user_id");
     }
 
     @Test
