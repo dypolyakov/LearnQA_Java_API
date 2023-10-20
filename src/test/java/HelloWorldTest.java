@@ -3,9 +3,14 @@ import io.restassured.http.Headers;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class HelloWorldTest {
     @Test
@@ -210,5 +215,76 @@ public class HelloWorldTest {
                 .andReturn();
 
         response.prettyPrint();
+    }
+
+    // 3.1
+    @Test
+    public void testPassedAssertTrue() {
+        Response response = RestAssured
+                .get("https://playground.learnqa.ru/api/map")
+                .andReturn();
+
+        assertTrue(response.getStatusCode() == 200, "Unexpected status code");
+    }
+
+    @Test
+    public void testPassedAssertEquals() {
+        Response response = RestAssured
+                .get("https://playground.learnqa.ru/api/map")
+                .andReturn();
+
+        assertEquals(200, response.getStatusCode(), "Unexpected status code");
+    }
+
+    // 3.2
+    @Test
+    public void testHelloMethodWithoutName() {
+        JsonPath response = RestAssured
+                .get("https://playground.learnqa.ru/api/hello")
+                .jsonPath();
+
+        String answer = response.get("answer");
+
+        assertEquals("Hello, someone", answer, "The answer is not expected");
+    }
+
+    @Test
+    public void testHelloMethodWithName() {
+        String name = "Dima";
+
+        JsonPath response = RestAssured
+                .given()
+                .param("name", name)
+                .when()
+                .get("https://playground.learnqa.ru/api/hello")
+                .jsonPath();
+
+        String answer = response.get("answer");
+
+        assertEquals("Hello, " + name, answer, "The answer is not expected");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"", "John", "Pete"})
+    public void testHelloMethod(String name) {
+        Map<String, String> queryParams = new HashMap<>();
+
+        if (!name.isEmpty()) {
+            queryParams.put("name", name);
+        }
+
+        JsonPath response = RestAssured
+                .given()
+                .queryParams(queryParams)
+                .when()
+                .get("https://playground.learnqa.ru/api/hello")
+                .jsonPath();
+
+        String expectedName = name.isEmpty() ? "someone" : name;
+        String expectedResult = "Hello, " + expectedName;
+        String actualResult = response.get("answer");
+
+        assertEquals(expectedResult, actualResult, "The answer is not expected");
+
     }
 }
