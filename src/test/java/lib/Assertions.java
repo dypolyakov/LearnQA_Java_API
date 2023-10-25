@@ -9,8 +9,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class Assertions {
     public static void assertJsonByName(Response response, String name, int expectedValue) {
         response.then().assertThat().body("$", hasKey(name));
-        int value = response.jsonPath().getInt(name);
-        assertEquals(expectedValue, value, "Json value is not equal to expected value");
+        int actualValue = response.jsonPath().getInt(name);
+        assertEquals(expectedValue, actualValue, "Json value is not equal to expected value");
+    }
+
+    public static void assertJsonByName(Response response, String name, String expectedValue) {
+        response.then().assertThat().body("$", hasKey(name));
+        String actualValue = response.jsonPath().getString(name);
+        assertEquals(expectedValue, actualValue, "Json value is not equal to expected value");
     }
 
     public static void assertResponseTextEquals(Response response, String expectedAnswer) {

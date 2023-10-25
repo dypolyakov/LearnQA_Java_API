@@ -44,7 +44,7 @@ public class UserGetTest extends BaseTestCase {
                 .cookie("auth_sid", authCookie)
                 .header("x-csrf-token", authHeader)
                 .when()
-                .get(String.format("https://playground.learnqa.ru/api/user/%s", id))
+                .get("https://playground.learnqa.ru/api/user/{id}", id)
                 .andReturn();
 
         String[] expectedFields = {"username", "firstName", "lastName", "email"};
