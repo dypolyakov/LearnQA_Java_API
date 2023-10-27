@@ -101,7 +101,6 @@ public class UserEditTest extends BaseTestCase {
                 .makePostRequest("https://playground.learnqa.ru/api/user/", userData);
 
         String userId = getStringFromJson(responseCreateUser, "id");
-        System.out.println(userId);
 
         // LOGIN
         Map<String, String> authData = DataGenerator.getRegisteredUserAuthData();
@@ -119,8 +118,7 @@ public class UserEditTest extends BaseTestCase {
         Response responseEdit = apiCoreRequests
                 .makePutRequestWithAuth(url, authToken, authCookie, newUserData);
 
-        System.out.println(responseEdit.asString());
-        System.out.println(responseEdit.getStatusCode());
+        Assertions.assertResponseCodeEquals(responseEdit, 200);
     }
 
     @Test
