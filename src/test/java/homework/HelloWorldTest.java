@@ -1,4 +1,4 @@
-package tests;
+package homework;
 
 import io.restassured.RestAssured;
 import io.restassured.http.Headers;
@@ -12,7 +12,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class HelloWorldTest {
     @Test
@@ -226,7 +225,7 @@ public class HelloWorldTest {
                 .get("https://playground.learnqa.ru/api/map")
                 .andReturn();
 
-        assertTrue(response.getStatusCode() == 200, "Unexpected status code");
+        assertEquals(200, response.getStatusCode(), "Unexpected status code");
     }
 
     @Test

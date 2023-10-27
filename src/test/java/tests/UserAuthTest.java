@@ -7,38 +7,37 @@ import io.restassured.response.Response;
 import lib.ApiCoreRequests;
 import lib.Assertions;
 import lib.BaseTestCase;
+import lib.DataGenerator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import java.util.HashMap;
 import java.util.Map;
+
+import static lib.ApiUrls.AUTH;
+import static lib.ApiUrls.LOGIN;
+import static lib.Texts.*;
 
 @Epic("Authorization cases")
 @Feature("Authorization")
 public class UserAuthTest extends BaseTestCase {
 
-    String cookie;
-    String header;
-    int userIdOnAuth;
+    String authCookie;
+    String authHeader;
+    int userId;
     private final ApiCoreRequests apiCoreRequests = new ApiCoreRequests();
 
     @BeforeEach
     public void loginUser() {
-        Map<String, String> authData = new HashMap<>();
-        authData.put("email", "vinkotov@example.com");
-        authData.put("password", "1234");
+        Map<String, String> authData = DataGenerator.getRegisteredUserAuthData();
 
-        Response responseGetAuth = apiCoreRequests.makePostRequest(
-                "https://playground.learnqa.ru/api/user/login",
-                authData
-        );
+        Response responseGetAuth = apiCoreRequests.makePostRequest(LOGIN, authData);
 
-        cookie = getCookie(responseGetAuth, "auth_sid");
-        header = getHeader(responseGetAuth, "x-csrf-token");
-        userIdOnAuth = getIntFromJson(responseGetAuth, "user_id");
+        authCookie = getCookie(responseGetAuth, AUTH_COOKIE);
+        authHeader = getHeader(responseGetAuth, AUTH_HEADER);
+        userId = getIntFromJson(responseGetAuth, USER_ID);
     }
 
 
@@ -46,14 +45,8 @@ public class UserAuthTest extends BaseTestCase {
     @DisplayName("Test positive auth user")
     @Description("This test successfully authorized user by email and password")
     public void testAuthUser() {
-
-        Response responseCheckAuth = apiCoreRequests.makeGetRequest(
-                "https://playground.learnqa.ru/api/user/auth",
-                header,
-                cookie
-        );
-
-        Assertions.assertJsonByName(responseCheckAuth, "user_id", userIdOnAuth);
+        Response responseCheckAuth = apiCoreRequests.makeGetRequest(AUTH, authHeader, authCookie);
+        Assertions.assertJsonByName(responseCheckAuth, USER_ID, userId);
     }
 
 
@@ -65,19 +58,13 @@ public class UserAuthTest extends BaseTestCase {
         Response responseCheckAuth;
 
         if (condition.equals("cookie")) {
-            responseCheckAuth = apiCoreRequests.makeGetRequestWithCookie(
-                    "https://playground.learnqa.ru/api/user/auth",
-                    cookie
-            );
+            responseCheckAuth = apiCoreRequests.makeGetRequestWithCookie(AUTH, authCookie);
         } else if (condition.equals("header")) {
-            responseCheckAuth = apiCoreRequests.makeGetRequestWithToken(
-                    "https://playground.learnqa.ru/api/user/auth",
-                    header
-            );
+            responseCheckAuth = apiCoreRequests.makeGetRequestWithToken(AUTH, authHeader);
         } else {
             throw new IllegalArgumentException("Condition value is known " + condition);
         }
 
-        Assertions.assertJsonByName(responseCheckAuth, "user_id", 0);
+        Assertions.assertJsonByName(responseCheckAuth, USER_ID, 0);
     }
 }
