@@ -3,7 +3,6 @@ package tests;
 import io.qameta.allure.Description;
 import io.qameta.allure.Epic;
 import io.qameta.allure.Feature;
-import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import lib.ApiCoreRequests;
 import lib.Assertions;
@@ -15,7 +14,10 @@ import org.junit.jupiter.api.Test;
 import java.util.HashMap;
 import java.util.Map;
 
-import static io.restassured.RestAssured.given;
+import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
+import static lib.ApiUrls.LOGIN;
+import static lib.ApiUrls.USER;
+import static lib.Texts.*;
 
 @Epic("Edit User Cases")
 @Feature("Edit User")
@@ -28,51 +30,24 @@ public class UserEditTest extends BaseTestCase {
     public void testEditJustCreatedTest() {
         // GENERATE USER
         Map<String, String> userData = DataGenerator.getRegistrationData();
-
-        JsonPath responseCreateUser = given()
-                .body(userData)
-                .when()
-                .post("https://playground.learnqa.ru/api/user/")
-                .jsonPath();
-
-        String userId = responseCreateUser.getString("id");
+        Response responseCreateUser = apiCoreRequests.makePostRequest(USER, userData);
+        String userId = getStringFromJson(responseCreateUser, ID);
 
         // LOGIN
-        Map<String, String> authData = new HashMap<>();
-        authData.put("email", userData.get("email"));
-        authData.put("password", userData.get("password"));
-
-        Response responseAuth = given()
-                .body(authData)
-                .when()
-                .post("https://playground.learnqa.ru/api/user/login")
-                .andReturn();
+        Map<String, String> authData = getAuthData(userData);
+        Response responseAuth = apiCoreRequests.makePostRequest(LOGIN, authData);
 
         // EDIT
         String newName = "Changed Name";
-
         Map<String, String> editData = new HashMap<>();
         editData.put("firstName", newName);
 
-        String authHeader = getHeader(responseAuth, "x-csrf-token");
-        String authCookie = getCookie(responseAuth, "auth_sid");
-
-        given()
-                .header("x-csrf-token", authHeader)
-                .cookie("auth_sid", authCookie)
-                .body(editData)
-                .when()
-                .put("https://playground.learnqa.ru/api/user/{id}", userId)
-                .andReturn();
+        String authHeader = getHeader(responseAuth, AUTH_HEADER);
+        String authCookie = getCookie(responseAuth, AUTH_COOKIE);
+        apiCoreRequests.makePutRequestWithAuth(USER + userId, authHeader, authCookie, editData);
 
         // GET
-        Response responseUserData = given()
-                .header("x-csrf-token", authHeader)
-                .cookie("auth_sid", authCookie)
-                .when()
-                .get("https://playground.learnqa.ru/api/user/{id}", userId)
-                .andReturn();
-
+        Response responseUserData = apiCoreRequests.makeGetRequest(USER + userId, authHeader, authCookie);
         Assertions.assertJsonByName(responseUserData, "firstName", newName);
     }
 
@@ -82,19 +57,13 @@ public class UserEditTest extends BaseTestCase {
     public void testEditUserWithoutAuth() {
         // GENERATE USER
         Map<String, String> userData = DataGenerator.getRegistrationData();
-
-        Response responseCreateUser = apiCoreRequests
-                .makePostRequest("https://playground.learnqa.ru/api/user/", userData);
-
-        String userId = getStringFromJson(responseCreateUser, "id");
+        Response responseCreateUser = apiCoreRequests.makePostRequest(USER, userData);
+        String userId = getStringFromJson(responseCreateUser, ID);
 
         // EDIT
         Map<String, String> newUserData = DataGenerator.getRegistrationData();
-        String url = String.format("https://playground.learnqa.ru/api/user/%s", userId);
-        Response responseEditUser = apiCoreRequests
-                .makePutRequest(url, newUserData);
-
-        Assertions.assertResponseCodeEquals(responseEditUser, 400);
+        Response responseEditUser = apiCoreRequests.makePutRequest(USER + userId, newUserData);
+        Assertions.assertResponseCodeEquals(responseEditUser, HTTP_BAD_REQUEST);
         Assertions.assertResponseTextEquals(responseEditUser, "Auth token not supplied");
     }
 
@@ -104,27 +73,18 @@ public class UserEditTest extends BaseTestCase {
     public void testEditUserWithAnotherUser() {
         // GENERATE USER
         Map<String, String> userData = DataGenerator.getRegistrationData();
-
-        Response responseCreateUser = apiCoreRequests
-                .makePostRequest("https://playground.learnqa.ru/api/user/", userData);
-
-        String userId = getStringFromJson(responseCreateUser, "id");
+        Response responseCreateUser = apiCoreRequests.makePostRequest(USER, userData);
+        String userId = getStringFromJson(responseCreateUser, ID);
 
         // LOGIN
         Map<String, String> authData = DataGenerator.getRegisteredUserAuthData();
-
-        Response responseAuth = apiCoreRequests
-                .makePostRequest("https://playground.learnqa.ru/api/user/login", authData);
-
-        String authToken = getHeader(responseAuth, "x-csrf-token");
-        String authCookie = getCookie(responseAuth, "auth_sid");
+        Response responseAuth = apiCoreRequests.makePostRequest(LOGIN, authData);
+        String authToken = getHeader(responseAuth, AUTH_HEADER);
+        String authCookie = getCookie(responseAuth, AUTH_COOKIE);
 
         // EDIT
         Map<String, String> newUserData = DataGenerator.getRegistrationData();
-        String url = String.format("https://playground.learnqa.ru/api/user/%s", userId);
-
-        Response responseEdit = apiCoreRequests
-                .makePutRequestWithAuth(url, authToken, authCookie, newUserData);
+        Response responseEdit = apiCoreRequests.makePutRequestWithAuth(USER + userId, authToken, authCookie, newUserData);
 
         System.out.println(responseEdit.getStatusCode());
         System.out.println(responseEdit.asString());
@@ -136,46 +96,32 @@ public class UserEditTest extends BaseTestCase {
     public void testEditUserWithAnotherUserIdGreaterThan10() {
         // Generating a user who will change the data
         Map<String, String> editUserData = DataGenerator.getRegistrationData();
-
-        apiCoreRequests.makePostRequest("https://playground.learnqa.ru/api/user/", editUserData);
+        apiCoreRequests.makePostRequest(USER, editUserData);
 
         // Generating a user whose data will be changed
         Map<String, String> beingEditedUserData = DataGenerator.getRegistrationData();
 
-        Response responseCreateBeingEditedUser = apiCoreRequests
-                .makePostRequest("https://playground.learnqa.ru/api/user/", beingEditedUserData);
-
-        String beingEditedUserId = getStringFromJson(responseCreateBeingEditedUser, "id");
+        Response responseCreateBeingEditedUser = apiCoreRequests.makePostRequest(USER, beingEditedUserData);
+        String beingEditedUserId = getStringFromJson(responseCreateBeingEditedUser, ID);
 
         // Authorization by the user who will change the data
-        Map<String, String> editUserAuthData = getAuthData(editUserData.get("email"), editUserData.get("password"));
-
-        Response responseAuthEdit = apiCoreRequests
-                .makePostRequest("https://playground.learnqa.ru/api/user/login", editUserAuthData);
-
-        String authToken = getHeader(responseAuthEdit, "x-csrf-token");
-        String authCookie = getCookie(responseAuthEdit, "auth_sid");
+        Map<String, String>  editUserAuthData = getAuthData(editUserData);
+        Response responseAuthEdit = apiCoreRequests.makePostRequest(LOGIN, editUserAuthData);
+        String authToken = getHeader(responseAuthEdit, AUTH_HEADER);
+        String authCookie = getCookie(responseAuthEdit, AUTH_COOKIE);
 
         // Modifying another user's data
         Map<String, String> newUserData = DataGenerator.getRegistrationData();
-        String url = String.format("https://playground.learnqa.ru/api/user/%s", beingEditedUserId);
-
-        apiCoreRequests.makePutRequestWithAuth(url, authToken, authCookie, newUserData);
+        apiCoreRequests.makePutRequestWithAuth(USER + beingEditedUserId, authToken, authCookie, newUserData);
 
         // Authorization under a user whose data has been changed
-        Map<String, String> beingEditUserAuthData = getAuthData(beingEditedUserData.get("email"), beingEditedUserData.get("password"));
-
-        Response responseAuthBeingEdit = apiCoreRequests
-                .makePostRequest("https://playground.learnqa.ru/api/user/login", beingEditUserAuthData);
-
-        String authBeingEditToken = getHeader(responseAuthBeingEdit, "x-csrf-token");
-        String authBeingEditCookie = getCookie(responseAuthBeingEdit, "auth_sid");
+        Map<String, String> beingEditUserAuthData = getAuthData(beingEditedUserData);
+        Response responseAuthBeingEdit = apiCoreRequests.makePostRequest(LOGIN, beingEditUserAuthData);
+        String authBeingEditToken = getHeader(responseAuthBeingEdit, AUTH_HEADER);
+        String authBeingEditCookie = getCookie(responseAuthBeingEdit, AUTH_COOKIE);
 
         // Requesting new data for a user who has been changed
-        url = String.format("https://playground.learnqa.ru/api/user/%s", beingEditedUserId);
-
-        Response responseBeingEditUserData = apiCoreRequests
-                .makeGetRequest(url, authBeingEditToken, authBeingEditCookie);
+        Response responseBeingEditUserData = apiCoreRequests.makeGetRequest(USER + beingEditedUserId, authBeingEditToken, authBeingEditCookie);
 
         Assertions.assertJsonByName(responseBeingEditUserData, "id", beingEditedUserId);
         Assertions.assertJsonByName(responseBeingEditUserData, "email", newUserData.get("email"));
@@ -191,32 +137,23 @@ public class UserEditTest extends BaseTestCase {
         // GENERATE USER
         Map<String, String> userData = DataGenerator.getRegistrationData();
 
-        Response responseCreateUser = apiCoreRequests
-                .makePostRequest("https://playground.learnqa.ru/api/user/", userData);
-
-        String userId = getStringFromJson(responseCreateUser, "id");
-        String email = userData.get("email");
-        String password = userData.get("password");
+        Response responseCreateUser = apiCoreRequests.makePostRequest(USER, userData);
+        String userId = getStringFromJson(responseCreateUser, ID);
 
         // LOGIN
-        Map<String, String> authData = getAuthData(email, password);
-
-        Response responseAuth = apiCoreRequests
-                .makePostRequest("https://playground.learnqa.ru/api/user/login", authData);
-
-        String authToken = getHeader(responseAuth, "x-csrf-token");
-        String authCookie = getCookie(responseAuth, "auth_sid");
+        Map<String, String> authData = getAuthData(userData);
+        Response responseAuth = apiCoreRequests.makePostRequest(LOGIN, authData);
+        String authToken = getHeader(responseAuth, AUTH_HEADER);
+        String authCookie = getCookie(responseAuth, AUTH_COOKIE);
 
         // EDIT
         String invalidEmail = "learnqaexample.com";
         Map<String, String> newUserData = new HashMap<>();
         newUserData.put("email", invalidEmail);
 
-        String url = String.format("https://playground.learnqa.ru/api/user/%s", userId);
-        Response responseEdit = apiCoreRequests
-                .makePutRequestWithAuth(url, authToken, authCookie, newUserData);
+        Response responseEdit = apiCoreRequests.makePutRequestWithAuth(USER + userId, authToken, authCookie, newUserData);
 
-        Assertions.assertResponseCodeEquals(responseEdit, 400);
+        Assertions.assertResponseCodeEquals(responseEdit, HTTP_BAD_REQUEST);
         Assertions.assertResponseTextEquals(responseEdit, "Invalid email format");
     }
 
@@ -226,33 +163,24 @@ public class UserEditTest extends BaseTestCase {
     public void testChangeFirstNameToShortName() {
         // GENERATE USER
         Map<String, String> userData = DataGenerator.getRegistrationData();
-
-        Response responseCreateUser = apiCoreRequests
-                .makePostRequest("https://playground.learnqa.ru/api/user/", userData);
-
-        String userId = getStringFromJson(responseCreateUser, "id");
-        String email = userData.get("email");
-        String password = userData.get("password");
+        Response responseCreateUser = apiCoreRequests.makePostRequest(USER, userData);
+        String userId = getStringFromJson(responseCreateUser, ID);
 
         // LOGIN
-        Map<String, String> authData = getAuthData(email, password);
+        Map<String, String> authData = getAuthData(userData);
 
-        Response responseAuth = apiCoreRequests
-                .makePostRequest("https://playground.learnqa.ru/api/user/login", authData);
+        Response responseAuth = apiCoreRequests.makePostRequest(LOGIN, authData);
 
-        String authToken = getHeader(responseAuth, "x-csrf-token");
-        String authCookie = getCookie(responseAuth, "auth_sid");
+        String authToken = getHeader(responseAuth, AUTH_HEADER);
+        String authCookie = getCookie(responseAuth, AUTH_COOKIE);
 
         // EDIT
         String shortName = DataGenerator.randomString(1);
         Map<String, String> newUserData = new HashMap<>();
         newUserData.put("firstName", shortName);
+        Response responseEdit = apiCoreRequests.makePutRequestWithAuth(USER + userId, authToken, authCookie, newUserData);
 
-        String url = String.format("https://playground.learnqa.ru/api/user/%s", userId);
-        Response responseEdit = apiCoreRequests
-                .makePutRequestWithAuth(url, authToken, authCookie, newUserData);
-
-        Assertions.assertResponseCodeEquals(responseEdit, 400);
+        Assertions.assertResponseCodeEquals(responseEdit, HTTP_BAD_REQUEST);
         Assertions.assertResponseTextEquals(responseEdit, "{\"error\":\"Too short value for field firstName\"}");
     }
 }
