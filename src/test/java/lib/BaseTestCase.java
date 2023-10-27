@@ -18,7 +18,7 @@ public class BaseTestCase {
 
     protected String getHeader(Response response, String name) {
         Headers headers = response.getHeaders();
-        assertTrue(headers.hasHeaderWithName(name), "Response doesn't have header with name" + name);
+        assertTrue(headers.hasHeaderWithName(name), "Response doesn't have header with name " + name);
         return headers.getValue(name);
     }
 
@@ -37,5 +37,17 @@ public class BaseTestCase {
             put("email", email);
             put("password", password);
         }};
+    }
+
+    protected Map<String, String> getAuthData(Map<String, String> userData) {
+        Map<String, String> authData = new HashMap<>();
+        for (Map.Entry<String, String> userParam : userData.entrySet()) {
+            if (userParam.getKey().equals("email")) {
+                authData.put("email", userParam.getValue());
+            } else if (userParam.getKey().equals("password")) {
+                authData.put("password", userParam.getValue());
+            }
+        }
+        return authData;
     }
 }
