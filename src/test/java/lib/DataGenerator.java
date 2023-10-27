@@ -8,7 +8,7 @@ import java.util.Random;
 
 public class DataGenerator {
     public static String getRandomEmail() {
-        String timestamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
+        String timestamp = new SimpleDateFormat("yyyyMMddHHmmssS").format(new Date());
         return String.format("learnqa%s@example.com", timestamp);
     }
 

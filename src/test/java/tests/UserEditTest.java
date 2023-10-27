@@ -127,8 +127,7 @@ public class UserEditTest extends BaseTestCase {
         // Generating a user who will change the data
         Map<String, String> editUserData = DataGenerator.getRegistrationData();
 
-        Response responseCreateEditUser = apiCoreRequests
-                .makePostRequest("https://playground.learnqa.ru/api/user/", editUserData);
+        apiCoreRequests.makePostRequest("https://playground.learnqa.ru/api/user/", editUserData);
 
         // Generating a user whose data will be changed
         Map<String, String> beingEditedUserData = DataGenerator.getRegistrationData();
@@ -137,9 +136,6 @@ public class UserEditTest extends BaseTestCase {
                 .makePostRequest("https://playground.learnqa.ru/api/user/", beingEditedUserData);
 
         String beingEditedUserId = getStringFromJson(responseCreateBeingEditedUser, "id");
-
-        System.out.printf("Пользователь, которого меняют (id %s):%n", beingEditedUserId);
-        System.out.println(beingEditedUserData);
 
         // Authorization by the user who will change the data
         Map<String, String> editUserAuthData = getAuthData(editUserData.get("email"), editUserData.get("password"));
@@ -154,14 +150,7 @@ public class UserEditTest extends BaseTestCase {
         Map<String, String> newUserData = DataGenerator.getRegistrationData();
         String url = String.format("https://playground.learnqa.ru/api/user/%s", beingEditedUserId);
 
-        Response responseEdit = apiCoreRequests
-                .makePutRequestWithAuth(url, authToken, authCookie, newUserData);
-
-        System.out.printf("Новые данные для пользователя:%n");
-        System.out.println(newUserData);
-        System.out.println("ResponseEdit:");
-        System.out.println(responseEdit.asString());
-        System.out.println(responseEdit.getStatusCode());
+        apiCoreRequests.makePutRequestWithAuth(url, authToken, authCookie, newUserData);
 
         // Authorization under a user whose data has been changed
         Map<String, String> beingEditUserAuthData = getAuthData(beingEditedUserData.get("email"), beingEditedUserData.get("password"));
