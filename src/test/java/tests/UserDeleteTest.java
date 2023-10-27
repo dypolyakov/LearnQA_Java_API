@@ -28,19 +28,20 @@ public class UserDeleteTest extends BaseTestCase {
         // LOGIN
         Map<String, String> authData = DataGenerator.getRegisteredUserAuthData();
 
-        Response responseAuth = apiCoreRequests
-                .makePostRequest(LOGIN, authData);
+        Response responseAuth = apiCoreRequests.makePostRequest(LOGIN, authData);
 
         String userId = getStringFromJson(responseAuth, USER_ID);
         String authHeader = getHeader(responseAuth, AUTH_HEADER);
         String authCookie = getCookie(responseAuth, AUTH_COOKIE);
 
         // DELETE
-        Response responseDelete = apiCoreRequests
-                .makeDeleteRequest(USER + userId, authHeader, authCookie);
+        Response responseDelete = apiCoreRequests.makeDeleteRequest(USER + userId, authHeader, authCookie);
 
         Assertions.assertResponseCodeEquals(responseDelete, HTTP_BAD_REQUEST);
-        Assertions.assertResponseTextEquals(responseDelete, "Please, do not delete test users with ID 1, 2, 3, 4 or 5.");
+        Assertions.assertResponseTextEquals(
+                responseDelete,
+                "Please, do not delete test users with ID 1, 2, 3, 4 or 5."
+        );
     }
 
     @Test
@@ -49,28 +50,22 @@ public class UserDeleteTest extends BaseTestCase {
     public void testDeleteUser() {
         // GENERATE USER
         Map<String, String> userData = DataGenerator.getRegistrationData();
-        apiCoreRequests
-                .makePostRequest(USER, userData);
+        apiCoreRequests.makePostRequest(USER, userData);
 
         // LOGIN
         Map<String, String> authData = getAuthData(userData);
-        Response responseAuth = apiCoreRequests
-                .makePostRequest(LOGIN, authData);
+        Response responseAuth = apiCoreRequests.makePostRequest(LOGIN, authData);
 
         String userId = getStringFromJson(responseAuth, Texts.USER_ID);
         String authHeader = getHeader(responseAuth, AUTH_HEADER);
         String authCookie = getCookie(responseAuth, Texts.AUTH_COOKIE);
 
         // DELETE
-        Response responseDelete = apiCoreRequests
-                .makeDeleteRequest(USER + userId, authHeader, authCookie);
-
+        Response responseDelete = apiCoreRequests.makeDeleteRequest(USER + userId, authHeader, authCookie);
         Assertions.assertResponseCodeEquals(responseDelete, HTTP_OK);
 
         // GET
-        Response responseGet = apiCoreRequests
-                .makeGetRequest(USER + userId, authHeader, authCookie);
-
+        Response responseGet = apiCoreRequests.makeGetRequest(USER + userId, authHeader, authCookie);
         Assertions.assertResponseCodeEquals(responseGet, HTTP_NOT_FOUND);
         Assertions.assertResponseTextEquals(responseGet, "User not found");
     }
@@ -81,28 +76,22 @@ public class UserDeleteTest extends BaseTestCase {
     public void testDeleteUserWithAnotherUser() {
         // GENERATE USER FOR DELETION
         Map<String, String> userForDeleteData = DataGenerator.getRegistrationData();
-        Response responseCreateUser = apiCoreRequests
-                .makePostRequest(USER, userForDeleteData);
+        Response responseCreateUser = apiCoreRequests.makePostRequest(USER, userForDeleteData);
         String userIdForDelete = getStringFromJson(responseCreateUser, "id");
 
         // GENERATE USER WHO DELETE
         Map<String, String> userWhoDeleteData = DataGenerator.getRegistrationData();
-        apiCoreRequests
-                .makePostRequest(USER, userWhoDeleteData);
+        apiCoreRequests.makePostRequest(USER, userWhoDeleteData);
 
         // LOGIN WITH USER WHO DELETE
         Map<String, String> authData = getAuthData(userWhoDeleteData);
-
-        Response responseAuth = apiCoreRequests
-                .makePostRequest(LOGIN, authData);
+        Response responseAuth = apiCoreRequests.makePostRequest(LOGIN, authData);
 
         String authHeader = getHeader(responseAuth, AUTH_HEADER);
         String authCookie = getCookie(responseAuth, AUTH_COOKIE);
 
         // DELETE GENERATED USER WITH ANOTHER USER
-        Response responseDelete = apiCoreRequests
-                .makeDeleteRequest(USER + userIdForDelete, authHeader, authCookie);
-
+        Response responseDelete = apiCoreRequests.makeDeleteRequest(USER + userIdForDelete, authHeader, authCookie);
         Assertions.assertResponseCodeEquals(responseDelete, 400);
     }
 }
