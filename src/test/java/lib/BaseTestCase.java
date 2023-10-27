@@ -3,6 +3,7 @@ package lib;
 import io.restassured.http.Headers;
 import io.restassured.response.Response;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import static org.hamcrest.Matchers.hasKey;
@@ -24,5 +25,17 @@ public class BaseTestCase {
     protected int getIntFromJson(Response response, String name) {
         response.then().assertThat().body("$", hasKey(name));
         return response.jsonPath().getInt(name);
+    }
+
+    protected String getStringFromJson(Response response, String name) {
+        response.then().assertThat().body("$", hasKey(name));
+        return response.jsonPath().getString(name);
+    }
+
+    protected Map<String, String> getAuthData(String email, String password) {
+        return new HashMap<String, String>() {{
+            put("email", email);
+            put("password", password);
+        }};
     }
 }

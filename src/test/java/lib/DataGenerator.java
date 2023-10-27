@@ -15,10 +15,10 @@ public class DataGenerator {
     public static Map<String, String> getRegistrationData() {
         Map<String, String> data = new HashMap<>();
         data.put("email", getRandomEmail());
-        data.put("password", "123");
-        data.put("username", "learnqa");
-        data.put("firstName", "learnqa");
-        data.put("lastName", "learnqa");
+        data.put("password", randomString(10));
+        data.put("username", randomString(7));
+        data.put("firstName", randomString(7));
+        data.put("lastName", randomString(7));
         return data;
     }
 
@@ -44,5 +44,12 @@ public class DataGenerator {
             result.append(character);
         }
         return result.toString();
+    }
+
+    public static Map<String, String> getRegisteredUserAuthData() {
+        return new HashMap<String, String>() {{
+            put("email", "vinkotov@example.com");
+            put("password", "1234");
+        }};
     }
 }
