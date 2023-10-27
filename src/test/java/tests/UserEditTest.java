@@ -1,8 +1,6 @@
 package tests;
 
-import io.qameta.allure.Description;
-import io.qameta.allure.Epic;
-import io.qameta.allure.Feature;
+import io.qameta.allure.*;
 import io.restassured.response.Response;
 import lib.ApiCoreRequests;
 import lib.Assertions;
@@ -27,6 +25,7 @@ public class UserEditTest extends BaseTestCase {
     @Test
     @DisplayName("Editing a newly created user")
     @Description("The test check that it is possible to create a user, authorize with it and edit its user data")
+    @Severity(SeverityLevel.NORMAL)
     public void testEditJustCreatedTest() {
         // GENERATE USER
         Map<String, String> userData = DataGenerator.getRegistrationData();
@@ -54,6 +53,7 @@ public class UserEditTest extends BaseTestCase {
     @Test
     @DisplayName("Editing user data without authorization")
     @Description("The test checks that it is not possible to edit user data without authorization")
+    @Severity(SeverityLevel.CRITICAL)
     public void testEditUserWithoutAuth() {
         // GENERATE USER
         Map<String, String> userData = DataGenerator.getRegistrationData();
@@ -70,6 +70,7 @@ public class UserEditTest extends BaseTestCase {
     @Test
     @DisplayName("Editing user data when authorized under another user (id < 10)")
     @Description("The test checks that you cannot edit user data when authorized under user with id < 10")
+    @Severity(SeverityLevel.MINOR)
     public void testEditUserWithAnotherUser() {
         // GENERATE USER
         Map<String, String> userData = DataGenerator.getRegistrationData();
@@ -93,6 +94,7 @@ public class UserEditTest extends BaseTestCase {
     @Test
     @DisplayName("Editing user data when authorized under another user (id > 10)")
     @Description("The test checks that you cannot edit user data when authorized under user (id > 10)")
+    @Severity(SeverityLevel.NORMAL)
     public void testEditUserWithAnotherUserIdGreaterThan10() {
         // Generating a user who will change the data
         Map<String, String> editUserData = DataGenerator.getRegistrationData();
@@ -133,6 +135,7 @@ public class UserEditTest extends BaseTestCase {
     @Test
     @DisplayName("Changing a user's e-mail address to an invalid one")
     @Description("The test checks that it is not possible to edit a user's email address to an invalid one")
+    @Severity(SeverityLevel.NORMAL)
     public void testChangeEmailToInvalid() {
         // GENERATE USER
         Map<String, String> userData = DataGenerator.getRegistrationData();
@@ -160,6 +163,7 @@ public class UserEditTest extends BaseTestCase {
     @Test
     @DisplayName("Changing the user name to a short name")
     @Description("The test checks that it is not possible to change the user name to a short name")
+    @Severity(SeverityLevel.MINOR)
     public void testChangeFirstNameToShortName() {
         // GENERATE USER
         Map<String, String> userData = DataGenerator.getRegistrationData();

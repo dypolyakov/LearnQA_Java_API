@@ -1,8 +1,6 @@
 package tests;
 
-import io.qameta.allure.Description;
-import io.qameta.allure.Epic;
-import io.qameta.allure.Feature;
+import io.qameta.allure.*;
 import io.restassured.response.Response;
 import lib.ApiCoreRequests;
 import lib.Assertions;
@@ -29,6 +27,7 @@ public class UserRegisterTest extends BaseTestCase {
     @Test
     @DisplayName("Creating a user with an existing e-mail address")
     @Description("This test checks that it's impossible to create a new user with an already taken email address")
+    @Severity(SeverityLevel.CRITICAL)
     public void testCreateUserWithExistingEmail() {
         Map<String, String> userData = DataGenerator.getRegistrationData();
         String email = "vinkotov@example.com";
@@ -43,6 +42,7 @@ public class UserRegisterTest extends BaseTestCase {
     @Test
     @DisplayName("Successful creation of a new user")
     @Description("This test checks that it is possible to create a new user")
+    @Severity(SeverityLevel.BLOCKER)
     public void testCreateUserSuccessfully() {
         Map<String, String> userData = DataGenerator.getRegistrationData();
 
@@ -55,6 +55,7 @@ public class UserRegisterTest extends BaseTestCase {
     @Test
     @DisplayName("Creating a user with an invalid e-mail address")
     @Description("This test checks that it is not possible to create a new user with an invalid email address")
+    @Severity(SeverityLevel.NORMAL)
     public void testCreateUserWithInvalidEmail() {
         String invalidEmail = "learnqaexample.com";
         Map<String, String> userData = DataGenerator.getRegistrationData();
@@ -70,6 +71,7 @@ public class UserRegisterTest extends BaseTestCase {
     @ValueSource(strings = {"username", "firstName", "lastName", "email", "password"})
     @DisplayName("Creating a new user without one of the fields")
     @Description("This test checks that you cannot create a user if at least one field is not filled in")
+    @Severity(SeverityLevel.NORMAL)
     public void testCreateUserWithoutOneOfFields(String field) {
         Map<String, String> userData = DataGenerator.getRegistrationData();
         userData.remove(field);
@@ -83,6 +85,7 @@ public class UserRegisterTest extends BaseTestCase {
     @Test
     @DisplayName("Creating a user with a short name (1 character)")
     @Description("This test checks that it is not possible to create a new user with a short name (1 character)")
+    @Severity(SeverityLevel.MINOR)
     public void testCreateUserWithShortFirstName() {
         String shortFirstName = DataGenerator.randomString(1);
         Map<String, String> userData = DataGenerator.getRegistrationData();
@@ -98,6 +101,7 @@ public class UserRegisterTest extends BaseTestCase {
     @Test
     @DisplayName("Creating a user with a long name (251 characters)")
     @Description("This test checks that it is not possible to create a new user with a long name (251 characters)")
+    @Severity(SeverityLevel.MINOR)
     public void testCreateUserWithLongFirstName() {
         String longFirstName = DataGenerator.randomString(251);
         Map<String, String> userData = DataGenerator.getRegistrationData();

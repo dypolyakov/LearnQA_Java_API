@@ -1,8 +1,6 @@
 package tests;
 
-import io.qameta.allure.Description;
-import io.qameta.allure.Epic;
-import io.qameta.allure.Feature;
+import io.qameta.allure.*;
 import io.restassured.response.Response;
 import lib.*;
 import org.junit.jupiter.api.DisplayName;
@@ -24,6 +22,7 @@ public class UserDeleteTest extends BaseTestCase {
     @Test
     @DisplayName("Deleting a user with ID 2")
     @Description("The test checks that you cannot delete a user with ID = 2")
+    @Severity(SeverityLevel.MINOR)
     public void testDeleteUserWithId2() {
         // LOGIN
         Map<String, String> authData = DataGenerator.getRegisteredUserAuthData();
@@ -47,6 +46,7 @@ public class UserDeleteTest extends BaseTestCase {
     @Test
     @DisplayName("Successful user deletion")
     @Description("The test checks that it is possible to successfully delete a user")
+    @Severity(SeverityLevel.NORMAL)
     public void testDeleteUser() {
         // GENERATE USER
         Map<String, String> userData = DataGenerator.getRegistrationData();
@@ -73,6 +73,7 @@ public class UserDeleteTest extends BaseTestCase {
     @Test
     @DisplayName("Deleting a user by another user")
     @Description("The test checks that it is not possible to delete a user by another user")
+    @Severity(SeverityLevel.CRITICAL)
     public void testDeleteUserWithAnotherUser() {
         // GENERATE USER FOR DELETION
         Map<String, String> userForDeleteData = DataGenerator.getRegistrationData();
