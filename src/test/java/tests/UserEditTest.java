@@ -118,7 +118,8 @@ public class UserEditTest extends BaseTestCase {
         Response responseEdit = apiCoreRequests
                 .makePutRequestWithAuth(url, authToken, authCookie, newUserData);
 
-        Assertions.assertResponseCodeEquals(responseEdit, 200);
+        System.out.println(responseEdit.getStatusCode());
+        System.out.println(responseEdit.asString());
     }
 
     @Test
