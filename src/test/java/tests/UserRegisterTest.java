@@ -31,11 +31,9 @@ public class UserRegisterTest extends BaseTestCase {
     @DisplayName("Creating a user with an existing e-mail address")
     @Description("This test checks that it's impossible to create a new user with an already taken email address")
     public void testCreateUserWithExistingEmail() {
+        Map<String, String> userData = DataGenerator.getRegistrationData();
         String email = "vinkotov@example.com";
-
-        Map<String, String> userData = new HashMap<>();
-        userData.put("email", email);
-        userData = DataGenerator.getRegistrationData(userData);
+        userData.replace("email", email);
 
         Response response = apiCoreRequests.makePostRequest(USER, userData);
 
