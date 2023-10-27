@@ -16,6 +16,11 @@ import org.junit.jupiter.params.provider.ValueSource;
 import java.util.HashMap;
 import java.util.Map;
 
+import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
+import static java.net.HttpURLConnection.HTTP_OK;
+import static lib.ApiUrls.USER;
+import static lib.Texts.ID;
+
 @Epic("Registration cases")
 @Feature("Registration")
 public class UserRegisterTest extends BaseTestCase {
@@ -30,13 +35,11 @@ public class UserRegisterTest extends BaseTestCase {
 
         Map<String, String> userData = new HashMap<>();
         userData.put("email", email);
-
         userData = DataGenerator.getRegistrationData(userData);
 
-        Response response = apiCoreRequests
-                .makePostRequest("https://playground.learnqa.ru/api/user/", userData);
+        Response response = apiCoreRequests.makePostRequest(USER, userData);
 
-        Assertions.assertResponseCodeEquals(response, 400);
+        Assertions.assertResponseCodeEquals(response, HTTP_BAD_REQUEST);
         Assertions.assertResponseTextEquals(response, String.format("Users with email '%s' already exists", email));
     }
 
@@ -46,11 +49,10 @@ public class UserRegisterTest extends BaseTestCase {
     public void testCreateUserSuccessfully() {
         Map<String, String> userData = DataGenerator.getRegistrationData();
 
-        Response response = apiCoreRequests
-                .makePostRequest("https://playground.learnqa.ru/api/user/", userData);
+        Response response = apiCoreRequests.makePostRequest(USER, userData);
 
-        Assertions.assertResponseCodeEquals(response, 200);
-        Assertions.assertJsonHasField(response, "id");
+        Assertions.assertResponseCodeEquals(response, HTTP_OK);
+        Assertions.assertJsonHasField(response, ID);
     }
 
     @Test
@@ -61,11 +63,10 @@ public class UserRegisterTest extends BaseTestCase {
         Map<String, String> userData = DataGenerator.getRegistrationData();
         userData.replace("email", invalidEmail);
 
-        Response response = apiCoreRequests
-                .makePostRequest("https://playground.learnqa.ru/api/user/", userData);
+        Response response = apiCoreRequests.makePostRequest(USER, userData);
 
         Assertions.assertResponseTextEquals(response, "Invalid email format");
-        Assertions.assertResponseCodeEquals(response, 400);
+        Assertions.assertResponseCodeEquals(response, HTTP_BAD_REQUEST);
     }
 
     @ParameterizedTest
@@ -76,10 +77,9 @@ public class UserRegisterTest extends BaseTestCase {
         Map<String, String> userData = DataGenerator.getRegistrationData();
         userData.remove(field);
 
-        Response response = apiCoreRequests
-                .makePostRequest("https://playground.learnqa.ru/api/user/", userData);
+        Response response = apiCoreRequests.makePostRequest(USER, userData);
 
-        Assertions.assertResponseCodeEquals(response, 400);
+        Assertions.assertResponseCodeEquals(response, HTTP_BAD_REQUEST);
         Assertions.assertResponseTextEquals(response, String.format("The following required params are missed: %s", field));
     }
 
@@ -92,9 +92,9 @@ public class UserRegisterTest extends BaseTestCase {
         userData.replace("firstName", shortFirstName);
 
         Response response = apiCoreRequests
-                .makePostRequest("https://playground.learnqa.ru/api/user/", userData);
+                .makePostRequest(USER, userData);
 
-        Assertions.assertResponseCodeEquals(response, 400);
+        Assertions.assertResponseCodeEquals(response, HTTP_BAD_REQUEST);
         Assertions.assertResponseTextEquals(response, "The value of 'firstName' field is too short");
     }
 
@@ -106,10 +106,9 @@ public class UserRegisterTest extends BaseTestCase {
         Map<String, String> userData = DataGenerator.getRegistrationData();
         userData.replace("firstName", longFirstName);
 
-        Response response = apiCoreRequests
-                .makePostRequest("https://playground.learnqa.ru/api/user/", userData);
+        Response response = apiCoreRequests.makePostRequest(USER, userData);
 
-        Assertions.assertResponseCodeEquals(response, 400);
+        Assertions.assertResponseCodeEquals(response, HTTP_BAD_REQUEST);
         Assertions.assertResponseTextEquals(response, "The value of 'firstName' field is too long");
     }
 }
